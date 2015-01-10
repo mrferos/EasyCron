@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    die("Must run 'php composer.phar install' to set up EasyCron");
+}
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+
+$application = new \EasyCron\Application();
+$application->run();

@@ -140,6 +140,8 @@ class ECWalker {
             $cronLine = '*/' . (int)$AST->getAmount();
         }
 
+        $order = array('minute', 'hour', 'weekday', 'month');
+
         $frequency = rtrim($AST->getFrequency(), 's');
         if (array_key_exists($frequency, $this->_components)) {
             if (empty($this->_components[$frequency])) {

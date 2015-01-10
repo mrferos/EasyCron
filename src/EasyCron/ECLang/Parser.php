@@ -58,6 +58,7 @@ class Parser {
                     $statements[] = $this->executeStatement();
                     break;
                 default:
+                    var_dump($this->_lexer->lookahead); die;
                     $this->syntaxError(Lexer::T_DETERMINER);
                     break;
             }
@@ -103,7 +104,7 @@ class Parser {
         if ($nextToken['type'] == Lexer::T_INTEGER) {
             $this->match(Lexer::T_INTEGER);
             $determineStatement->setDays(array($this->_lexer->token['value']));
-        }elseif ($nextToken['tyoe'] == Lexer::T_DAYUNIT) {
+        }elseif ($nextToken['type'] == Lexer::T_DAYUNIT) {
             $this->match(Lexer::T_DAYUNIT);
             $determineStatement->setDays(explode(',', $this->_lexer->token['value']));
         } else {
