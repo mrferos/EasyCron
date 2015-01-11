@@ -4,12 +4,12 @@ namespace EasyCron\ECLang\AST;
 class DetermineInStatement extends Node
 {
     /**
-     * @var
+     * @var array
      */
     protected $_months = array();
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getMonths()
     {
@@ -17,9 +17,9 @@ class DetermineInStatement extends Node
     }
 
     /**
-     * @param mixed $months
+     * @param array $months
      */
-    public function setMonths($months)
+    public function setMonths(array $months)
     {
         $this->_months = $months;
     }

@@ -19,7 +19,7 @@ class DetermineOnStatement extends Node
     /**
      * @param array $days
      */
-    public function setDays($days)
+    public function setDays(array $days)
     {
         $this->_days = $days;
     }

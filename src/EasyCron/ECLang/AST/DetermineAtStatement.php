@@ -19,7 +19,7 @@ class DetermineAtStatement extends Node
     /**
      * @param array $times
      */
-    public function setTimes($times)
+    public function setTimes(array $times)
     {
         $this->_times = $times;
     }
