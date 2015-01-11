@@ -57,7 +57,7 @@ abstract class Node
     }
 
     /**
-     * @param object $obj
+     * @param Node $obj
      *
      * @return string
      */
