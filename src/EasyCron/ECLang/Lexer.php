@@ -23,8 +23,8 @@ class Lexer extends AbstractLexer {
         self::T_DETERMINER => '\b(?:every|at|on the|on|in)\b',
         self::T_MONTHUNIT  => '(?:(?:Jan(?:urary)?|Feb(?:urary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)(?:,)?)',
         self::T_TIMESERIES => '(?:\d+(?:am|pm)(?:,)?)',
-        self::T_TIMEUNIT   => '(?:minute|day|hour|month|year|week)(?:s)',
         self::T_WEEKUNIT   => '(?:(?:mon|tues|wed(?:nes)?|thurs|fri)(?:day)?(?:s)?(?:,)?)',
+        self::T_TIMEUNIT   => '(?:minute|day|hour|month|year|week)(?:s)?',
         self::T_DAYUNIT    => '\d(?:,)?',
         self::T_STRING     => '\"(?:[^"\\\\]|\\\\.)*\"',
     );

@@ -1,6 +1,8 @@
 <?php
 namespace EasyCron\ECLang;
 
+use EasyCron\Cron\Creator;
+use EasyCron\Cron\CreatorInterface;
 use EasyCron\ECLang\AST\DetermineAtStatement;
 use EasyCron\ECLang\AST\DetermineEveryStatement;
 use EasyCron\ECLang\AST\DetermineInStatement;
@@ -18,6 +20,15 @@ class ECWalker {
         'year'     => null,
         'command'  => null
     );
+
+    /**
+     * @var WriterInterface
+     */
+    protected $_cronWriter;
+    /**
+     * @var CreatorInterface
+     */
+    protected $_cronCreator;
 
     public function walk(array $astCollection)
     {
@@ -46,55 +57,59 @@ class ECWalker {
             }
         }
 
-        $components = array_map(function($value) {
-            return trim(is_null($value) ? '*' : $value);
-        }, $this->_components);
-
-        $cronString = $components['minute'] . ' ' .
-                        $components['hour'] . ' ' .
-                        $components['monthday'] . ' ' .
-                        $components['month'] . ' ' .
-                        $components['weekday'] . ' ' .
-                        $components['command'];
-
-        return $cronString;
+        return $this->getCronCreator()->getLine();
     }
 
-    public function getComponents()
+    /**
+     * @return CreatorInterface
+     */
+    public function getCronCreator()
     {
-        return $this->_components;
+        if (empty($this->_cronCreator)) {
+            $this->setCronCreator(new Creator());
+        }
+
+        return $this->_cronCreator;
+    }
+
+    /**
+     * @param CreatorInterface $cronCreator
+     */
+    public function setCronCreator(CreatorInterface $cronCreator)
+    {
+        $this->_cronCreator = $cronCreator;
     }
 
     public function walkExecuteStatement(ExecuteStatement $AST)
     {
-        $this->_components['command'] = $AST->getCommand();
+        $command = $AST->getCommand();
+        $this->getCronCreator()->execute(substr($command, 1, strlen($command) - 2));
     }
 
     public function walkDetermineOnTheStatement(DetermineOnTheStatement $AST)
     {
-        $this->_components['monthday'] = implode(',', $AST->getDays());
+        $this->getCronCreator()->onThe($AST->getDays());
     }
 
     public function walkDetermineInStatement(DetermineInStatement $AST)
     {
         $valueMap = array(
-            'jan(?:urary)?' => 1,
-            'feb(?:urary)?' => 2,
-            'mar(?:ch)?' => 3,
-            'apr(?:il)?' => 4,
-            'may' => 5,
-            'jun(?:e)?' => 6,
-            'jul(?:y)?' => 7,
-            'aug(?:ust)?' => 8,
-            'sep(?:tember)?' => 9,
-            'oct(?:ober)?' => 10,
-            'nov(?:ember)?' => 11,
-            'dec(?:ember)?' => 12
+            'jan(?:urary)?' => 0,
+            'feb(?:urary)?' => 1,
+            'mar(?:ch)?' => 2,
+            'apr(?:il)?' => 3,
+            'may' => 4,
+            'jun(?:e)?' => 5,
+            'jul(?:y)?' => 6,
+            'aug(?:ust)?' => 7,
+            'sep(?:tember)?' => 8,
+            'oct(?:ober)?' => 9,
+            'nov(?:ember)?' => 10,
+            'dec(?:ember)?' => 11
         );
 
         $mappedMonths = $this->_mapValues($AST->getMonths(), $valueMap);
-        asort($mappedMonths);
-        $this->_components['month'] = implode(',', $mappedMonths);
+        $this->getCronCreator()->in($mappedMonths);
     }
 
     public function walkDetermineAtStatement(DetermineAtStatement $AST)
@@ -106,8 +121,7 @@ class ECWalker {
             $mappedTimes[] = $matches['int'] + ($matches['meridiem'] == 'pm' ? 12 : 0);
         }
 
-        asort($mappedTimes);
-        $this->_components['hour'] = implode(',', $mappedTimes);
+        $this->getCronCreator()->at($mappedTimes);
     }
 
     public function walkDetermineOnStatement(DetermineOnStatement $AST)
@@ -124,30 +138,12 @@ class ECWalker {
         );
 
         $mappedDays = $this->_mapValues($days, $valueMap);
-        asort($mappedDays);
-        $this->_components['weekday'] = implode(',', $mappedDays);
+        $this->getCronCreator()->on($mappedDays);
     }
 
     public function walkDetermineEveryStatement(DetermineEveryStatement $AST)
     {
-        $amount = $AST->getAmount();
-        $cronLine = '';
-        if ($amount == 0) {
-            $cronLine = '0';
-        }elseif ($amount == 1) {
-            $cronLine = '*';
-        } elseif ($amount > 1) {
-            $cronLine = '*/' . (int)$AST->getAmount();
-        }
-
-        $order = array('minute', 'hour', 'weekday', 'month');
-
-        $frequency = rtrim($AST->getFrequency(), 's');
-        if (array_key_exists($frequency, $this->_components)) {
-            if (empty($this->_components[$frequency])) {
-                $this->_components[$frequency] = $cronLine;
-            }
-        }
+        $this->getCronCreator()->every($AST->getAmount(), $AST->getFrequency());
     }
 
     protected function _mapValues($values, $valueMap)

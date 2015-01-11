@@ -1,6 +1,8 @@
 <?php
 namespace EasyCron\Console\Command;
 
+use EasyCron\Cron\Writer;
+use EasyCron\Cron\WriterInterface;
 use EasyCron\ECLang\Lexer;
 use EasyCron\ECLang\Parser;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -20,6 +22,11 @@ class EditCommand extends AbstractCommand
      * @var OutputInterface
      */
     protected $_output;
+
+    /**
+     * @var WriterInterface
+     */
+    protected $_cronWriter;
 
     protected function configure()
     {
@@ -43,14 +50,44 @@ class EditCommand extends AbstractCommand
         $lines = explode("\n", $outputContent);
         $cronLines = array();
         foreach ($lines as $line) {
+            if (empty($line)) {
+                continue;
+            }
             $lexer = new Lexer();
             $lexer->setInput($line);
             $parser = new Parser($lexer);
             $cronLines[] =  $parser->parse();
         }
 
-        var_dump($cronLines); die;
+        $inputFile = $this->_getEasyFile();
+        $outputFile = $this->_getOutFile();
+        $writer = $this->getCronWriter();
+        $writer->setCronjobFile($outputFile);
+        $writer->write($cronLines);
+        $output->writeln('<info>' . $inputFile . ' has been written to ' . $outputFile);
     }
+
+    /**
+     * @return WriterInterface
+     */
+    public function getCronWriter()
+    {
+        if (empty($this->_cronWriter)) {
+            $this->setCronWriter(new Writer());
+        }
+
+        return $this->_cronWriter;
+    }
+
+    /**
+     * @param WriterInterface $cronWriter
+     */
+    public function setCronWriter(WriterInterface $cronWriter)
+    {
+        $this->_cronWriter = $cronWriter;
+    }
+
+
 
     protected function _getEasyFile()
     {

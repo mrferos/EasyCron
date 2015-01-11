@@ -58,11 +58,11 @@ class Parser {
                     $statements[] = $this->executeStatement();
                     break;
                 default:
-                    var_dump($this->_lexer->lookahead); die;
                     $this->syntaxError(Lexer::T_DETERMINER);
                     break;
             }
         }
+
 
         return $statements;
     }
@@ -123,8 +123,25 @@ class Parser {
     {
         $this->match(Lexer::T_COMMANDPRECURSOR);
         $executeStatement = new ExecuteStatement();
-        $this->match(Lexer::T_STRING);
-        $commandString = $this->_lexer->token['value'];
+        if ($this->_lexer->lookahead['type'] == Lexer::T_STRING) {
+            $this->match(Lexer::T_STRING);
+            $commandString = $this->_lexer->token['value'];
+        } else {
+            if (strstr($this->_lexer->lookahead['value'], '"')) {
+                $this->match($this->_lexer->lookahead['type']);
+                $i = 0;
+                $string = $this->_lexer->token['value'];
+                do {
+                    ++$i;
+                    $this->match($this->_lexer->lookahead['type']);
+                    $string .= '  ' . $this->_lexer->token['value'];
+                } while (!strstr($this->_lexer->token['value'], '"') && $i < 100);
+
+                $commandString = $string;
+            }
+        }
+
+
 
         $executeStatement->setCommand($commandString);
         return $executeStatement;
@@ -145,13 +162,13 @@ class Parser {
         if ($nextToken['type'] == Lexer::T_INTEGER) {
             $this->match(Lexer::T_INTEGER);
             $amountToken = $this->_lexer->token;
-
             $this->match(Lexer::T_TIMEUNIT);
             $timeUnit = $this->_lexer->token;
 
             $amount    = $amountToken['value'];
             $frequency = $timeUnit['value'];
         } elseif ($nextToken['type'] == Lexer::T_TIMEUNIT) {
+            $this->match(Lexer::T_TIMEUNIT);
             $amount     = 1;
             $frequency  = $nextToken['value'];
         } else {
