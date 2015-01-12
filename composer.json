@@ -1,4 +1,13 @@
 {
+    "name": "mrferos/easy-cron",
+    "description": "Utility to easy create cronjobs",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andres Galindo",
+            "email": "me@andresgalindo.us"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "EasyCron\\": "src/EasyCron"
@@ -8,6 +17,7 @@
         "symfony/console": "3.0.*@dev",
         "doctrine/lexer": "dev-master"
     },
+    "bin": ["bin/easycron"],
     "require-dev": {
         "phpunit/phpunit" : "~3.7",
         "mikey179/vfsStream": "1.4.*@dev"
